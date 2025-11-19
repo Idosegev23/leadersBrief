@@ -46,7 +46,7 @@ export default function Home() {
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true)
     try {
-      await axios.post('https://hook.eu1.make.com/exhjdnhhkqomqf7rwf51d8s6yramqfhr', data, {
+      await axios.post('https://hook.eu2.make.com/uryu3mv7m9tu3dtbkqto6qfdbnrdbjr0', data, {
         headers: {
           'Content-Type': 'application/json',
         },
