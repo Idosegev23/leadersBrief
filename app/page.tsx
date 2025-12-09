@@ -171,17 +171,17 @@ export default function Home() {
                     {field.required && <span className="text-red-500 mr-1">*</span>}
                   </label>
                   {field.type === 'checkbox-group' ? (
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                       {field.options?.map((option) => (
                         <label
                           key={option}
-                          className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer"
+                          className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer border border-gray-200 hover:border-primary transition-colors"
                         >
                           <input
                             type="checkbox"
                             value={option}
                             {...register(field.name)}
-                            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-2 focus:ring-primary"
+                            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-2 focus:ring-primary flex-shrink-0"
                           />
                           <span className="text-sm md:text-base text-gray-700">{option}</span>
                         </label>
