@@ -170,7 +170,24 @@ export default function Home() {
                     {field.label}
                     {field.required && <span className="text-red-500 mr-1">*</span>}
                   </label>
-                  {field.type === 'textarea' ? (
+                  {field.type === 'checkbox-group' ? (
+                    <div className="space-y-2">
+                      {field.options?.map((option) => (
+                        <label
+                          key={option}
+                          className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            value={option}
+                            {...register(field.name)}
+                            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-2 focus:ring-primary"
+                          />
+                          <span className="text-sm md:text-base text-gray-700">{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : field.type === 'textarea' ? (
                     <textarea
                       id={field.name}
                       {...register(field.name)}

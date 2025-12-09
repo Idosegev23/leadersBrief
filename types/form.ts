@@ -8,6 +8,7 @@ export const formSchema = z.object({
   clientName: z.string().min(1, 'שדה חובה'),
   productService: z.string().min(1, 'שדה חובה'),
   deadline: z.string().min(1, 'שדה חובה'),
+  services: z.array(z.string()).min(1, 'יש לבחור לפחות שירות אחד'),
 
   // מסך 2 - רקע
   marketCategory: z.string().min(1, 'שדה חובה'),
@@ -46,9 +47,10 @@ export interface StepConfig {
   fields: {
     name: keyof FormData
     label: string
-    type: 'text' | 'textarea' | 'date'
+    type: 'text' | 'textarea' | 'date' | 'checkbox-group'
     placeholder?: string
     required?: boolean
+    options?: string[]
   }[]
 }
 
