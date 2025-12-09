@@ -34,7 +34,7 @@ export const formSteps: StepConfig[] = [
       },
       {
         name: 'services',
-        label: 'אילו שירותים הלקוח מעוניין?',
+        label: 'אילו שירותים אתה מעוניין?',
         type: 'checkbox-group',
         required: true,
         options: [
