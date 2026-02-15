@@ -187,6 +187,21 @@ export default function Home() {
                         </label>
                       ))}
                     </div>
+                  ) : field.type === 'select' ? (
+                    <select
+                      id={field.name}
+                      {...register(field.name)}
+                      className={`w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white ${
+                        error ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">בחר אפשרות...</option>
+                      {field.options?.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
                   ) : field.type === 'textarea' ? (
                     <textarea
                       id={field.name}

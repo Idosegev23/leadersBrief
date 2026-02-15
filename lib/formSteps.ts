@@ -1,4 +1,4 @@
-import { StepConfig } from '@/types/form'
+import { StepConfig, SERVICES_LIST, PLATFORMS_LIST, CAMPAIGN_GOAL_TYPES, TIMING_TYPES } from '@/types/form'
 
 export const formSteps: StepConfig[] = [
   {
@@ -37,28 +37,18 @@ export const formSteps: StepConfig[] = [
         label: 'אילו שירותים אתה מעוניין?',
         type: 'checkbox-group',
         required: true,
-        options: [
-          'ניטור ושיח בקבוצות פייסבוק',
-          'מדיה ממומנת',
-          'תוכן גולשים ומודעות ממירות',
-          'מומחי טיקטוק',
-          'סושיאל קומרס',
-          'אסטרטגיה',
-          'יצירת תוכן מקורי',
-          'משפיעני הפצה',
-          'יוצרי תוכן',
-          'הפקות וידאו',
-          'ניהול סושיאל מדיה',
-          'קריאייטיב',
-          'משפיענים',
-          'ניהול והקמת קהילות',
-          'ניהול נבחרות',
-          'הפקת אירועי אופליין',
-        ],
+        options: SERVICES_LIST,
       },
       {
-        name: 'deadline',
-        label: 'דד ליין',
+        name: 'platforms',
+        label: 'פלטפורמות רלוונטיות',
+        type: 'checkbox-group',
+        required: true,
+        options: PLATFORMS_LIST,
+      },
+      {
+        name: 'campaignLaunchDate',
+        label: 'תאריך עליית הקמפיין',
         type: 'date',
         required: true,
       },
@@ -130,10 +120,17 @@ export const formSteps: StepConfig[] = [
     description: 'מטרות וציפיות מהמהלך',
     fields: [
       {
-        name: 'campaignGoals',
-        label: 'מטרות המהלך (למשל – הגברת מכירות, יצירת מודעות, תדמית וכו\')',
+        name: 'campaignGoalTypes',
+        label: 'סוגי מטרות המהלך (בחר אפשרויות)',
+        type: 'checkbox-group',
+        required: true,
+        options: CAMPAIGN_GOAL_TYPES,
+      },
+      {
+        name: 'campaignGoalsDescription',
+        label: 'תאר את המטרות בפירוט',
         type: 'textarea',
-        placeholder: 'פרט את מטרות המהלך',
+        placeholder: 'פרט מה אנחנו רוצים להשיג',
         required: true,
       },
       {
@@ -144,10 +141,17 @@ export const formSteps: StepConfig[] = [
         required: true,
       },
       {
-        name: 'timing',
-        label: 'האם יש טיימינג ספציפי למהלך? השקה? עונה? אירוע?',
+        name: 'timingType',
+        label: 'טיימינג ספציפי למהלך',
+        type: 'select',
+        required: true,
+        options: TIMING_TYPES,
+      },
+      {
+        name: 'timingDetails',
+        label: 'פרטי טיימינג (עונה / השקת מוצר חדש / אירוע נקודתי)',
         type: 'textarea',
-        placeholder: 'פרטי טיימינג (אופציונלי)',
+        placeholder: 'למשל: עונת הקיץ, השקת מוצר חדש, אירוע פסח',
         required: false,
       },
     ],

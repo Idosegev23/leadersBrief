@@ -7,8 +7,9 @@ export const formSchema = z.object({
   submitterName: z.string().min(1, 'שדה חובה'),
   clientName: z.string().min(1, 'שדה חובה'),
   productService: z.string().min(1, 'שדה חובה'),
-  deadline: z.string().min(1, 'שדה חובה'),
+  campaignLaunchDate: z.string().min(1, 'שדה חובה'), // שונה מ-deadline
   services: z.array(z.string()).min(1, 'יש לבחור לפחות שירות אחד'),
+  platforms: z.array(z.string()).min(1, 'יש לבחור לפחות פלטפורמה אחת'), // חדש
 
   // מסך 2 - רקע
   marketCategory: z.string().min(1, 'שדה חובה'),
@@ -22,9 +23,11 @@ export const formSchema = z.object({
   audienceInsights: z.string().min(1, 'שדה חובה'),
 
   // מסך 4 - מטרות
-  campaignGoals: z.string().min(1, 'שדה חובה'),
+  campaignGoalTypes: z.array(z.string()).min(1, 'יש לבחור לפחות מטרה אחת'), // חדש
+  campaignGoalsDescription: z.string().min(1, 'שדה חובה'), // חדש
   desiredResponse: z.string().min(1, 'שדה חובה'),
-  timing: z.string().optional(),
+  timingType: z.string().min(1, 'שדה חובה'), // חדש
+  timingDetails: z.string().optional(), // חדש
 
   // מסך 5 - תובנה ומסר
   insight: z.string().min(1, 'שדה חובה'),
@@ -47,10 +50,47 @@ export interface StepConfig {
   fields: {
     name: keyof FormData
     label: string
-    type: 'text' | 'textarea' | 'date' | 'checkbox-group'
+    type: 'text' | 'textarea' | 'date' | 'checkbox-group' | 'select'
     placeholder?: string
     required?: boolean
     options?: string[]
   }[]
 }
+
+// רשימות אפשרויות
+export const SERVICES_LIST = [
+  'ניהול משפיענים',
+  'ניהול סושיאל',
+  'ניהול משפיעני הפצה וUGC',
+  'קידום ממומן',
+  'אימייל מרקטינג',
+  'שירותי קריאטיב',
+  'שימוש במערכת IMAI',
+];
+
+export const PLATFORMS_LIST = [
+  'אינסטגרם',
+  'טיקטוק',
+  'פייסבוק',
+  'יוטיוב',
+  'פינטרסט',
+  'לינקדאין',
+  'X (טוויטר)',
+  'ספוטיפיי',
+  'אחר',
+];
+
+export const CAMPAIGN_GOAL_TYPES = [
+  'הנעה למכר',
+  'מודעות',
+  'נחשקות',
+  'חדירה לשוק',
+];
+
+export const TIMING_TYPES = [
+  'שנתי',
+  'חציוני',
+  'רבעוני',
+  'חודשי',
+];
 
