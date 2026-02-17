@@ -66,6 +66,8 @@ export const SERVICES_LIST = [
   'אימייל מרקטינג',
   'שירותי קריאטיב',
   'שימוש במערכת IMAI',
+  'הפקות',
+  'ימי צילום',
 ];
 
 export const PLATFORMS_LIST = [

@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useSearchParams } from 'next/navigation'
 import axios from 'axios'
 import Image from 'next/image'
 import StepperWithValidation, { Step } from '@/components/StepperWithValidation'
@@ -10,10 +11,32 @@ import { FormData, formSchema } from '@/types/form'
 import { formSteps } from '@/lib/formSteps'
 import { saveFormData, loadFormData, clearFormData } from '@/lib/localStorage'
 
+interface HubMetadata {
+  token: string
+  created_by_email: string
+  created_by_name: string
+  client_email: string | null
+  client_name: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+const DOCS_HUB_URL = process.env.NEXT_PUBLIC_DOCS_HUB_URL || 'http://localhost:3002'
+
 export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-100"><div className="w-8 h-8 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin" /></div>}>
+      <HomeContent />
+    </Suspense>
+  )
+}
+
+function HomeContent() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
+  const [hubMetadata, setHubMetadata] = useState<HubMetadata | null>(null)
+  const searchParams = useSearchParams()
 
   const {
     register,
@@ -27,11 +50,31 @@ export default function Home() {
     mode: 'onChange',
   })
 
+  // Fetch Hub metadata if token is in URL
+  const fetchHubMetadata = useCallback(async (token: string) => {
+    try {
+      const res = await fetch(`${DOCS_HUB_URL}/api/links/${token}`)
+      if (res.ok) {
+        const data = await res.json()
+        setHubMetadata(data)
+      }
+    } catch (err) {
+      console.warn('Could not fetch Hub metadata:', err)
+    }
+  }, [])
+
+  useEffect(() => {
+    const token = searchParams.get('token')
+    if (token) {
+      fetchHubMetadata(token)
+    }
+  }, [searchParams, fetchHubMetadata])
+
   useEffect(() => {
     const savedData = loadFormData()
     if (savedData) {
       Object.keys(savedData).forEach((key) => {
-        setValue(key as keyof FormData, savedData[key as keyof FormData] as any)
+        setValue(key as keyof FormData, savedData[key as keyof FormData] as string | string[])
       })
     }
   }, [setValue])
@@ -46,11 +89,31 @@ export default function Home() {
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true)
     try {
-      await axios.post('https://hook.eu2.make.com/uryu3mv7m9tu3dtbkqto6qfdbnrdbjr0', data, {
+      // Build payload with Hub metadata if available
+      const payload: Record<string, unknown> = { ...data }
+
+      if (hubMetadata) {
+        payload._hub_token = hubMetadata.token
+        payload._created_by_email = hubMetadata.created_by_email
+        payload._created_by_name = hubMetadata.created_by_name
+        payload._client_email = hubMetadata.client_email
+        payload._sent_at = hubMetadata.created_at
+      }
+
+      await axios.post('https://hook.eu2.make.com/uryu3mv7m9tu3dtbkqto6qfdbnrdbjr0', payload, {
         headers: {
           'Content-Type': 'application/json',
         },
       })
+
+      // Mark link as completed in the Hub
+      if (hubMetadata?.token) {
+        fetch(`${DOCS_HUB_URL}/api/links/${hubMetadata.token}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'completed' }),
+        }).catch(() => {})
+      }
 
       setSubmitSuccess(true)
       clearFormData()
