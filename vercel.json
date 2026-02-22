@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/check-pending-briefs",
+      "schedule": "0 5 * * *"
+    }
+  ]
+}
