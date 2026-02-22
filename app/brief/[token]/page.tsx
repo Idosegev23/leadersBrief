@@ -7,8 +7,9 @@ import { useSearchParams, useParams } from 'next/navigation'
 import axios from 'axios'
 import Image from 'next/image'
 import StepperWithValidation, { Step } from '@/components/StepperWithValidation'
-import { FormData, formSchema } from '@/types/form'
+import { FormData, formSchema, formSchemaEn } from '@/types/form'
 import { formSteps } from '@/lib/formSteps'
+import { formStepsEn } from '@/lib/formSteps.en'
 import { saveFormData, loadFormData, clearFormData } from '@/lib/localStorage'
 import { createClient } from '@/lib/supabase/client'
 
@@ -19,6 +20,7 @@ interface BriefLinkData {
   client_email: string | null
   token: string
   status: string
+  language: 'he' | 'en'
   created_at: string
 }
 
@@ -59,6 +61,11 @@ function BriefContent() {
   const [briefLink, setBriefLink] = useState<BriefLinkData | null>(null)
   const [hubMetadata, setHubMetadata] = useState<HubMetadata | null>(null)
 
+  const lang = briefLink?.language || 'he'
+  const isEnglish = lang === 'en'
+  const activeFormSteps = isEnglish ? formStepsEn : formSteps
+  const activeSchema = isEnglish ? formSchemaEn : formSchema
+
   const {
     register,
     handleSubmit,
@@ -67,7 +74,7 @@ function BriefContent() {
     setValue,
     trigger,
   } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(activeSchema),
     mode: 'onChange',
   })
 
@@ -145,11 +152,13 @@ function BriefContent() {
         payload._sent_at = hubMetadata.created_at
       }
 
-      await axios.post(
-        'https://hook.eu2.make.com/uryu3mv7m9tu3dtbkqto6qfdbnrdbjr0',
-        payload,
-        { headers: { 'Content-Type': 'application/json' } }
-      )
+      const webhookUrl = isEnglish
+        ? 'https://hook.eu2.make.com/cpoy8k5bwarv2p3fhzgkkcdtp5qeqq7w'
+        : 'https://hook.eu2.make.com/uryu3mv7m9tu3dtbkqto6qfdbnrdbjr0'
+
+      await axios.post(webhookUrl, payload, {
+        headers: { 'Content-Type': 'application/json' },
+      })
 
       // Mark brief_links as completed
       if (briefLink) {
@@ -177,7 +186,7 @@ function BriefContent() {
       }, 3000)
     } catch (error) {
       console.error('Error submitting form:', error)
-      alert('אירעה שגיאה בשליחת הטופס. אנא נסה שנית.')
+      alert(isEnglish ? 'An error occurred while submitting the form. Please try again.' : 'אירעה שגיאה בשליחת הטופס. אנא נסה שנית.')
     } finally {
       setIsSubmitting(false)
     }
@@ -189,7 +198,7 @@ function BriefContent() {
   }
 
   const handleNextStep = async (step: number) => {
-    const stepConfig = formSteps[step - 1]
+    const stepConfig = activeFormSteps[step - 1]
     const fieldsToValidate = stepConfig.fields.map((field) => field.name)
     const isValid = await trigger(fieldsToValidate)
     return isValid
@@ -201,7 +210,7 @@ function BriefContent() {
 
   if (submitSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4" dir={isEnglish ? 'ltr' : 'rtl'}>
         <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center max-w-md w-full">
           <div className="w-20 h-20 md:w-24 md:h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg
@@ -219,10 +228,10 @@ function BriefContent() {
             </svg>
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
-            הטופס נשלח בהצלחה
+            {isEnglish ? 'Form Submitted Successfully' : 'הטופס נשלח בהצלחה'}
           </h2>
           <p className="text-gray-600">
-            תודה על מילוי הבריף. נחזור אליך בהקדם.
+            {isEnglish ? 'Thank you for filling out the brief. We will get back to you shortly.' : 'תודה על מילוי הבריף. נחזור אליך בהקדם.'}
           </p>
         </div>
       </div>
@@ -230,7 +239,7 @@ function BriefContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-4 md:py-8">
+    <div className="min-h-screen bg-gray-100 py-4 md:py-8" dir={isEnglish ? 'ltr' : 'rtl'} lang={isEnglish ? 'en' : 'he'}>
       <div className="max-w-5xl mx-auto px-3 md:px-4 mb-4 md:mb-8">
         <div className="bg-white rounded-lg md:rounded-xl shadow-md p-4 md:p-6 text-center">
           <div className="flex justify-center mb-3 md:mb-4">
@@ -244,15 +253,15 @@ function BriefContent() {
             />
           </div>
           <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
-            טופס בריף ללקוחות
+            {isEnglish ? 'Client Brief Form' : 'טופס בריף ללקוחות'}
           </h1>
           <p className="text-sm md:text-base text-gray-600 px-2">
-            מלא את הפרטים בקפידה כדי שנוכל ליצור עבורך את המהלך המושלם
+            {isEnglish ? 'Please fill in the details carefully so we can create the perfect campaign for you' : 'מלא את הפרטים בקפידה כדי שנוכל ליצור עבורך את המהלך המושלם'}
           </p>
           <div className="mt-3 md:mt-4 inline-flex items-center gap-2 bg-green-50 px-3 md:px-4 py-1.5 md:py-2 rounded-full">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0" />
             <p className="text-xs md:text-sm text-green-700 font-medium">
-              הנתונים נשמרים אוטומטית במהלך המילוי
+              {isEnglish ? 'Data is auto-saved as you fill in the form' : 'הנתונים נשמרים אוטומטית במהלך המילוי'}
             </p>
           </div>
         </div>
@@ -263,11 +272,11 @@ function BriefContent() {
         onStepChange={handleStepChange}
         onNextStep={handleNextStep}
         onFinalStepCompleted={handleFinalStep}
-        backButtonText="חזור"
-        nextButtonText="הבא"
+        backButtonText={isEnglish ? 'Back' : 'חזור'}
+        nextButtonText={isEnglish ? 'Next' : 'הבא'}
         disableStepIndicators={false}
       >
-        {formSteps.map((stepConfig, index) => (
+        {activeFormSteps.map((stepConfig, index) => (
           <Step key={index}>
             <div className="mb-4 md:mb-6">
               <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 mb-1 md:mb-2">
@@ -282,10 +291,10 @@ function BriefContent() {
                 <div key={field.name} className="mb-4 md:mb-6">
                   <label
                     htmlFor={field.name}
-                    className="block text-sm md:text-base font-semibold text-gray-700 mb-2"
+                    className={`block text-sm md:text-base font-semibold text-gray-700 mb-2`}
                   >
                     {field.label}
-                    {field.required && <span className="text-red-500 mr-1">*</span>}
+                    {field.required && <span className={`text-red-500 ${isEnglish ? 'ml-1' : 'mr-1'}`}>*</span>}
                   </label>
                   {field.type === 'checkbox-group' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -312,7 +321,7 @@ function BriefContent() {
                         error ? 'border-red-500' : 'border-gray-300'
                       }`}
                     >
-                      <option value="">בחר אפשרות...</option>
+                      <option value="">{isEnglish ? 'Select an option...' : 'בחר אפשרות...'}</option>
                       {field.options?.map((option) => (
                         <option key={option} value={option}>
                           {option}

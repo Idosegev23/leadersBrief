@@ -9,6 +9,7 @@ import type { User } from '@supabase/supabase-js'
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [language, setLanguage] = useState<'he' | 'en'>('he')
   const [clientEmail, setClientEmail] = useState('')
   const [clientName, setClientName] = useState('')
   const [customMessage, setCustomMessage] = useState('')
@@ -46,6 +47,7 @@ export default function DashboardPage() {
         creator_email: user.email,
         creator_name: user.user_metadata?.full_name || user.email,
         client_email: email || null,
+        language,
       })
       .select()
       .single()
@@ -54,7 +56,101 @@ export default function DashboardPage() {
     return data
   }
 
-  const buildEmailHtml = (briefLink: string, creatorName: string, recipientName: string, message: string) => {
+  const buildEmailHtml = (briefLink: string, creatorName: string, recipientName: string, message: string, lang: 'he' | 'en') => {
+    if (lang === 'en') {
+      const messageHtml = message
+        ? `
+<table width="100%" cellpadding="20" cellspacing="0" border="0" style="background-color:#fafbfe;border:1px solid #f0f0f8;border-radius:10px;margin-bottom:24px">
+<tr><td>
+<div style="font-size:10px;font-weight:bold;color:#e94560;text-transform:uppercase;margin-bottom:10px">● PERSONAL MESSAGE</div>
+<div style="font-size:15px;color:#1a1a2e;line-height:1.9;white-space:pre-line">${message}</div>
+</td></tr>
+</table>`
+        : ''
+
+      return `<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f0f0f8;font-family:Arial,Helvetica,sans-serif;direction:ltr;color:#1a1a2e;line-height:1.8">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0f0f8;padding:40px 20px">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(26,26,46,0.08)">
+
+<!-- Logo -->
+<tr><td align="center" style="padding:50px 40px 20px">
+<img src="https://leaders-brief.vercel.app/_next/image?url=%2Flogo.png&w=384&q=75" width="160" alt="Leaders" style="display:block" />
+</td></tr>
+
+<!-- Title -->
+<tr><td align="center" style="padding:10px 40px 5px">
+<div style="font-size:32px;font-weight:bold;color:#1a1a2e;margin:0">Client Brief</div>
+</td></tr>
+<tr><td align="center" style="padding-bottom:8px">
+<div style="font-size:12px;color:#8e8ea0;letter-spacing:3px;margin:0">CLIENT BRIEF INVITATION</div>
+</td></tr>
+<tr><td align="center" style="padding:8px 0 30px">
+<table cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:#e94560;height:3px;width:60px;font-size:1px;line-height:3px">&nbsp;</td></tr></table>
+</td></tr>
+
+<!-- Greeting -->
+<tr><td style="padding:0 40px">
+<table width="100%" cellpadding="24" cellspacing="0" border="0" style="background-color:#1a1a2e;border-radius:10px;margin-bottom:24px">
+<tr><td>
+<div style="font-size:10px;font-weight:bold;color:#f0c040;text-transform:uppercase;margin-bottom:10px">★ BRIEF INVITATION</div>
+<div style="font-size:20px;font-weight:bold;color:#ffffff;margin-bottom:12px">${recipientName ? `Hello ${recipientName},` : 'Hello,'}</div>
+<div style="font-size:16px;color:#ffffff;line-height:1.8;opacity:0.9"><strong>${creatorName}</strong> invites you to fill out a client brief — so we can start working together on your marketing campaign.</div>
+</td></tr>
+</table>
+
+<!-- Custom Message -->
+${messageHtml}
+
+<!-- What is a brief -->
+<table width="100%" cellpadding="20" cellspacing="0" border="0" style="background-color:#fafbfe;border:1px solid #f0f0f8;border-radius:10px;margin-bottom:28px">
+<tr><td>
+<div style="font-size:10px;font-weight:bold;color:#e94560;text-transform:uppercase;margin-bottom:10px">● WHAT IS A BRIEF?</div>
+<div style="font-size:14px;color:#1a1a2e;line-height:1.9">A short questionnaire that helps us understand your needs — target audience, goals, budget, and messaging — so we can create the perfect marketing campaign for you.</div>
+</td></tr>
+</table>
+
+<!-- Steps -->
+<table width="100%" cellpadding="16" cellspacing="0" border="0" style="background-color:#f8f9fc;border:1px solid #e8e8f0;border-radius:10px;margin-bottom:32px">
+<tr>
+<td width="33%" align="center" valign="top">
+<table cellpadding="0" cellspacing="0" border="0" width="34" height="34" style="background-color:#1a1a2e;border-radius:8px;margin:0 auto 8px"><tr><td align="center" valign="middle" style="color:#ffffff;font-size:13px;font-weight:bold">01</td></tr></table>
+<div style="font-size:13px;font-weight:bold;color:#1a1a2e">Click the button</div>
+</td>
+<td width="33%" align="center" valign="top" style="border-right:1px solid #e8e8f0;border-left:1px solid #e8e8f0">
+<table cellpadding="0" cellspacing="0" border="0" width="34" height="34" style="background-color:#1a1a2e;border-radius:8px;margin:0 auto 8px"><tr><td align="center" valign="middle" style="color:#ffffff;font-size:13px;font-weight:bold">02</td></tr></table>
+<div style="font-size:13px;font-weight:bold;color:#1a1a2e">Fill in the details</div>
+</td>
+<td width="33%" align="center" valign="top">
+<table cellpadding="0" cellspacing="0" border="0" width="34" height="34" style="background-color:#1a1a2e;border-radius:8px;margin:0 auto 8px"><tr><td align="center" valign="middle" style="color:#ffffff;font-size:13px;font-weight:bold">03</td></tr></table>
+<div style="font-size:13px;font-weight:bold;color:#1a1a2e">Submit & let's go!</div>
+</td>
+</tr>
+</table>
+
+<!-- CTA Button -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" style="padding:0 0 36px">
+<a href="${briefLink}" target="_blank" style="display:inline-block;background-color:#e94560;color:#ffffff;text-decoration:none;font-size:18px;font-weight:bold;padding:16px 56px;border-radius:8px;letter-spacing:0.5px">Fill Out the Brief</a>
+</td></tr></table>
+
+</td></tr>
+
+<!-- Footer -->
+<tr><td style="background-color:#1a1a2e;padding:28px 40px;text-align:center">
+<div style="font-size:12px;color:#8e8ea0;margin-bottom:4px">Sent by <strong style="color:#f0c040">${creatorName}</strong> via <strong style="color:#e94560">Leaders Brief</strong></div>
+<div style="font-size:11px;color:rgba(255,255,255,0.3)">&copy; ${new Date().getFullYear()} Leaders Group. All rights reserved.</div>
+</td></tr>
+
+</table>
+</td></tr></table>
+</body>
+</html>`
+    }
+
+    // Hebrew (default)
     const messageHtml = message
       ? `
 <table width="100%" cellpadding="20" cellspacing="0" border="0" style="background-color:#fafbfe;border:1px solid #f0f0f8;border-radius:10px;margin-bottom:24px">
@@ -159,8 +255,10 @@ ${messageHtml}
       const briefLink = await createBriefLink(clientEmail)
       const link = `${window.location.origin}/brief/${briefLink.token}`
       const creatorName = user!.user_metadata?.full_name || user!.email!
-      const subject = `${creatorName} מזמין אותך למלא בריף — Leaders`
-      const html = buildEmailHtml(link, creatorName, clientName, customMessage)
+      const subject = language === 'en'
+        ? `${creatorName} invites you to fill out a brief — Leaders`
+        : `${creatorName} מזמין אותך למלא בריף — Leaders`
+      const html = buildEmailHtml(link, creatorName, clientName, customMessage, language)
 
       // Send via Gmail API (from the user's own email)
       const res = await fetch('/api/send-email', {
@@ -262,6 +360,32 @@ ${messageHtml}
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 text-center">
           שליחת בריף ללקוח
         </h1>
+
+        {/* Language Selector */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex bg-white rounded-lg shadow-md p-1 gap-1">
+            <button
+              onClick={() => { setLanguage('he'); setGeneratedLink('') }}
+              className={`px-5 py-2.5 rounded-md text-sm font-bold transition-all ${
+                language === 'he'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              עברית
+            </button>
+            <button
+              onClick={() => { setLanguage('en'); setGeneratedLink('') }}
+              className={`px-5 py-2.5 rounded-md text-sm font-bold transition-all ${
+                language === 'en'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              English
+            </button>
+          </div>
+        </div>
 
         <div className="grid gap-4 md:gap-6">
           {/* Option A: Send via email */}
