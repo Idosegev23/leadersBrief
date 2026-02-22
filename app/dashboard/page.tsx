@@ -18,8 +18,26 @@ export default function DashboardPage() {
   const [copied, setCopied] = useState(false)
   const [sendSuccess, setSendSuccess] = useState(false)
   const [emailError, setEmailError] = useState('')
+  const [briefHistory, setBriefHistory] = useState<Array<{
+    id: string
+    token: string
+    client_email: string | null
+    creator_name: string | null
+    language: string
+    status: string
+    created_at: string
+  }>>([])
   const router = useRouter()
   const supabase = createClient()
+
+  const fetchBriefHistory = async (userId: string) => {
+    const { data } = await supabase
+      .from('brief_links')
+      .select('id, token, client_email, creator_name, language, status, created_at')
+      .eq('creator_id', userId)
+      .order('created_at', { ascending: false })
+    if (data) setBriefHistory(data)
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -29,8 +47,10 @@ export default function DashboardPage() {
       }
       setUser(user)
       setLoading(false)
+      fetchBriefHistory(user.id)
     })
-  }, [router, supabase.auth])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -287,6 +307,7 @@ ${messageHtml}
       setClientEmail('')
       setClientName('')
       setCustomMessage('')
+      if (user) fetchBriefHistory(user.id)
       setTimeout(() => setSendSuccess(false), 3000)
     } catch (error) {
       console.error('Error:', error)
@@ -302,6 +323,7 @@ ${messageHtml}
       const briefLink = await createBriefLink()
       const link = `${window.location.origin}/brief/${briefLink.token}`
       setGeneratedLink(link)
+      if (user) fetchBriefHistory(user.id)
     } catch (error) {
       console.error('Error:', error)
       alert('אירעה שגיאה. אנא נסה שנית.')
@@ -530,6 +552,80 @@ ${messageHtml}
             )}
           </div>
         </div>
+
+        {/* Brief History */}
+        {briefHistory.length > 0 && (
+          <div className="mt-8">
+            <div className="bg-white rounded-xl shadow-md p-5 md:p-8">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-lg md:text-xl font-bold text-gray-800">היסטוריית בריפים</h2>
+                  <p className="text-sm text-gray-500">מעקב אחר כל הבריפים שנשלחו</p>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b-2 border-gray-200">
+                      <th className="text-right py-3 px-2 font-semibold text-gray-600">לקוח</th>
+                      <th className="text-right py-3 px-2 font-semibold text-gray-600">שפה</th>
+                      <th className="text-right py-3 px-2 font-semibold text-gray-600">תאריך שליחה</th>
+                      <th className="text-right py-3 px-2 font-semibold text-gray-600">סטטוס</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {briefHistory.map((brief) => (
+                      <tr key={brief.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td className="py-3 px-2">
+                          <span className="text-gray-800" dir="ltr">
+                            {brief.client_email || '—'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                            brief.language === 'en'
+                              ? 'bg-blue-50 text-blue-700'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}>
+                            {brief.language === 'en' ? 'EN' : 'עב'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-gray-600" dir="ltr">
+                          {new Date(brief.created_at).toLocaleDateString('he-IL', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </td>
+                        <td className="py-3 px-2">
+                          {brief.status === 'completed' ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700">
+                              <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                              הוחזר
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700">
+                              <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+                              ממתין
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
