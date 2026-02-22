@@ -6,12 +6,12 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import type { User } from '@supabase/supabase-js'
 
-const WEBHOOK_URL = 'https://hook.eu2.make.com/uryu3mv7m9tu3dtbkqto6qfdbnrdbjr0'
-
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [clientEmail, setClientEmail] = useState('')
+  const [clientName, setClientName] = useState('')
+  const [customMessage, setCustomMessage] = useState('')
   const [generatedLink, setGeneratedLink] = useState('')
   const [isCreating, setIsCreating] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -54,6 +54,53 @@ export default function DashboardPage() {
     return data
   }
 
+  const buildEmailHtml = (briefLink: string, creatorName: string, recipientName: string, message: string) => {
+    const messageHtml = message
+      ? `<p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#374151;white-space:pre-line">${message}</p>`
+      : ''
+
+    return `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f4f6;padding:40px 20px">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.07)">
+
+<!-- Header -->
+<tr><td style="background:linear-gradient(135deg,#1e3a8a 0%,#0ea5e9 100%);padding:32px 40px;text-align:center">
+<img src="https://leaders-brief.vercel.app/logo.png" alt="Leaders" width="140" style="margin-bottom:12px">
+<h1 style="margin:0;font-size:22px;color:#ffffff;font-weight:700">בריף לקוח</h1>
+</td></tr>
+
+<!-- Body -->
+<tr><td style="padding:36px 40px">
+<p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#1e3a8a">${recipientName ? `שלום ${recipientName},` : 'שלום,'}</p>
+<p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#374151"><strong>${creatorName}</strong> מזמין אותך למלא בריף עבור הפרויקט שלנו יחד.</p>
+${messageHtml}
+<!-- CTA Button -->
+<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:8px 0 28px">
+<a href="${briefLink}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#1e3a8a 0%,#0ea5e9 100%);color:#ffffff;text-decoration:none;font-size:18px;font-weight:700;padding:14px 48px;border-radius:12px;letter-spacing:0.5px">מלא את הבריף</a>
+</td></tr></table>
+
+<div style="background-color:#f0f9ff;border-radius:12px;padding:20px 24px;border-right:4px solid #0ea5e9">
+<p style="margin:0 0 4px;font-size:14px;font-weight:600;color:#1e3a8a">מה זה בריף?</p>
+<p style="margin:0;font-size:14px;line-height:1.6;color:#4b5563">שאלון קצר שעוזר לנו להבין את הצרכים שלך, את קהל היעד, המטרות והתקציב — כדי שנוכל ליצור עבורך את המהלך השיווקי המושלם.</p>
+</div>
+</td></tr>
+
+<!-- Footer -->
+<tr><td style="background-color:#f9fafb;padding:24px 40px;text-align:center;border-top:1px solid #e5e7eb">
+<p style="margin:0 0 4px;font-size:13px;color:#9ca3af">נשלח על ידי <strong style="color:#6b7280">${creatorName}</strong> דרך Leaders</p>
+<p style="margin:0;font-size:12px;color:#d1d5db">© ${new Date().getFullYear()} Leaders Group. All rights reserved.</p>
+</td></tr>
+
+</table>
+</td></tr></table>
+</body>
+</html>`
+  }
+
   const handleSendEmail = async () => {
     setEmailError('')
     if (!clientEmail || !clientEmail.includes('@')) {
@@ -65,21 +112,37 @@ export default function DashboardPage() {
     try {
       const briefLink = await createBriefLink(clientEmail)
       const link = `${window.location.origin}/brief/${briefLink.token}`
+      const creatorName = user!.user_metadata?.full_name || user!.email!
+      const subject = `${creatorName} מזמין אותך למלא בריף — Leaders`
+      const html = buildEmailHtml(link, creatorName, clientName, customMessage)
 
-      await fetch(WEBHOOK_URL, {
+      // Send via Gmail API (from the user's own email)
+      const res = await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          _type: 'send_brief',
-          client_email: clientEmail,
-          brief_link: link,
-          creator_email: user!.email,
-          creator_name: user!.user_metadata?.full_name || user!.email,
+          to: clientEmail,
+          toName: clientName,
+          subject,
+          html,
         }),
       })
 
+      const result = await res.json()
+
+      if (!res.ok) {
+        if (result.error === 'no_token') {
+          alert('יש להתנתק ולהתחבר מחדש כדי לאפשר שליחת מיילים')
+        } else {
+          alert(result.message || 'אירעה שגיאה בשליחת המייל')
+        }
+        return
+      }
+
       setSendSuccess(true)
       setClientEmail('')
+      setClientName('')
+      setCustomMessage('')
       setTimeout(() => setSendSuccess(false), 3000)
     } catch (error) {
       console.error('Error:', error)
@@ -169,29 +232,56 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="flex gap-2">
-              <input
-                type="email"
-                value={clientEmail}
-                onChange={(e) => {
-                  setClientEmail(e.target.value)
-                  setEmailError('')
-                }}
-                placeholder="email@example.com"
-                dir="ltr"
-                className={`flex-1 px-4 py-2.5 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-sm md:text-base ${
-                  emailError ? 'border-red-500' : 'border-gray-300'
-                }`}
-              />
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">שם הלקוח</label>
+                  <input
+                    type="text"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    placeholder="שם הלקוח (אופציונלי)"
+                    className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-sm md:text-base"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">מייל הלקוח *</label>
+                  <input
+                    type="email"
+                    value={clientEmail}
+                    onChange={(e) => {
+                      setClientEmail(e.target.value)
+                      setEmailError('')
+                    }}
+                    placeholder="email@example.com"
+                    dir="ltr"
+                    className={`w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-sm md:text-base ${
+                      emailError ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">הוסף הודעה אישית (אופציונלי)</label>
+                <textarea
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                  placeholder="היי, אשמח שתמלא את הבריף הזה כדי שנוכל להתחיל לעבוד על הפרויקט..."
+                  rows={3}
+                  className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-sm md:text-base resize-none"
+                />
+              </div>
+
               <button
                 onClick={handleSendEmail}
                 disabled={isCreating}
-                className="bg-primary text-white px-5 md:px-6 py-2.5 rounded-lg font-medium hover:bg-primary-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-sm md:text-base"
+                className="w-full bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
               >
                 {isCreating ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
                 ) : (
-                  'שלח'
+                  'שלח בריף במייל'
                 )}
               </button>
             </div>
