@@ -56,43 +56,89 @@ export default function DashboardPage() {
 
   const buildEmailHtml = (briefLink: string, creatorName: string, recipientName: string, message: string) => {
     const messageHtml = message
-      ? `<p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#374151;white-space:pre-line">${message}</p>`
+      ? `
+<table width="100%" cellpadding="20" cellspacing="0" border="0" style="background-color:#fafbfe;border:1px solid #f0f0f8;border-radius:10px;margin-bottom:24px">
+<tr><td>
+<div style="font-size:10px;font-weight:bold;color:#e94560;text-transform:uppercase;margin-bottom:10px">● הודעה אישית</div>
+<div style="font-size:15px;color:#1a1a2e;line-height:1.9;white-space:pre-line">${message}</div>
+</td></tr>
+</table>`
       : ''
 
     return `<!DOCTYPE html>
 <html dir="rtl" lang="he">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
-<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f4f6;padding:40px 20px">
+<body style="margin:0;padding:0;background-color:#f0f0f8;font-family:Arial,Helvetica,sans-serif;direction:rtl;color:#1a1a2e;line-height:1.8">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0f0f8;padding:40px 20px">
 <tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.07)">
+<table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(26,26,46,0.08)">
 
-<!-- Header -->
-<tr><td style="background:linear-gradient(135deg,#1e3a8a 0%,#0ea5e9 100%);padding:32px 40px;text-align:center">
-<img src="https://leaders-brief.vercel.app/logo.png" alt="Leaders" width="140" style="margin-bottom:12px">
-<h1 style="margin:0;font-size:22px;color:#ffffff;font-weight:700">בריף לקוח</h1>
+<!-- Logo -->
+<tr><td align="center" style="padding:50px 40px 20px">
+<img src="https://leaders-brief.vercel.app/_next/image?url=%2Flogo.png&w=384&q=75" width="160" alt="Leaders" style="display:block" />
 </td></tr>
 
-<!-- Body -->
-<tr><td style="padding:36px 40px">
-<p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#1e3a8a">${recipientName ? `שלום ${recipientName},` : 'שלום,'}</p>
-<p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#374151"><strong>${creatorName}</strong> מזמין אותך למלא בריף עבור הפרויקט שלנו יחד.</p>
+<!-- Title -->
+<tr><td align="center" style="padding:10px 40px 5px">
+<div style="font-size:32px;font-weight:bold;color:#1a1a2e;margin:0">בריף לקוח</div>
+</td></tr>
+<tr><td align="center" style="padding-bottom:8px">
+<div style="font-size:12px;color:#8e8ea0;letter-spacing:3px;margin:0">CLIENT BRIEF INVITATION</div>
+</td></tr>
+<tr><td align="center" style="padding:8px 0 30px">
+<table cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:#e94560;height:3px;width:60px;font-size:1px;line-height:3px">&nbsp;</td></tr></table>
+</td></tr>
+
+<!-- Greeting -->
+<tr><td style="padding:0 40px">
+<table width="100%" cellpadding="24" cellspacing="0" border="0" style="background-color:#1a1a2e;border-radius:10px;margin-bottom:24px">
+<tr><td>
+<div style="font-size:10px;font-weight:bold;color:#f0c040;text-transform:uppercase;margin-bottom:10px">★ הזמנה למילוי בריף</div>
+<div style="font-size:20px;font-weight:bold;color:#ffffff;margin-bottom:12px">${recipientName ? `שלום ${recipientName},` : 'שלום,'}</div>
+<div style="font-size:16px;color:#ffffff;line-height:1.8;opacity:0.9"><strong>${creatorName}</strong> מזמין אותך למלא בריף לקוח — כדי שנוכל להתחיל לעבוד יחד על המהלך השיווקי שלך.</div>
+</td></tr>
+</table>
+
+<!-- Custom Message -->
 ${messageHtml}
+
+<!-- What is a brief -->
+<table width="100%" cellpadding="20" cellspacing="0" border="0" style="background-color:#fafbfe;border:1px solid #f0f0f8;border-radius:10px;margin-bottom:28px">
+<tr><td>
+<div style="font-size:10px;font-weight:bold;color:#e94560;text-transform:uppercase;margin-bottom:10px">● מה זה בריף?</div>
+<div style="font-size:14px;color:#1a1a2e;line-height:1.9">שאלון קצר שעוזר לנו להבין את הצרכים שלך — קהל היעד, המטרות, התקציב והמסרים — כדי שנוכל ליצור עבורך את המהלך השיווקי המושלם.</div>
+</td></tr>
+</table>
+
+<!-- Steps -->
+<table width="100%" cellpadding="16" cellspacing="0" border="0" style="background-color:#f8f9fc;border:1px solid #e8e8f0;border-radius:10px;margin-bottom:32px">
+<tr>
+<td width="33%" align="center" valign="top">
+<table cellpadding="0" cellspacing="0" border="0" width="34" height="34" style="background-color:#1a1a2e;border-radius:8px;margin:0 auto 8px"><tr><td align="center" valign="middle" style="color:#ffffff;font-size:13px;font-weight:bold">01</td></tr></table>
+<div style="font-size:13px;font-weight:bold;color:#1a1a2e">לחץ על הכפתור</div>
+</td>
+<td width="33%" align="center" valign="top" style="border-right:1px solid #e8e8f0;border-left:1px solid #e8e8f0">
+<table cellpadding="0" cellspacing="0" border="0" width="34" height="34" style="background-color:#1a1a2e;border-radius:8px;margin:0 auto 8px"><tr><td align="center" valign="middle" style="color:#ffffff;font-size:13px;font-weight:bold">02</td></tr></table>
+<div style="font-size:13px;font-weight:bold;color:#1a1a2e">מלא את הפרטים</div>
+</td>
+<td width="33%" align="center" valign="top">
+<table cellpadding="0" cellspacing="0" border="0" width="34" height="34" style="background-color:#1a1a2e;border-radius:8px;margin:0 auto 8px"><tr><td align="center" valign="middle" style="color:#ffffff;font-size:13px;font-weight:bold">03</td></tr></table>
+<div style="font-size:13px;font-weight:bold;color:#1a1a2e">שלח ונתחיל!</div>
+</td>
+</tr>
+</table>
+
 <!-- CTA Button -->
-<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:8px 0 28px">
-<a href="${briefLink}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#1e3a8a 0%,#0ea5e9 100%);color:#ffffff;text-decoration:none;font-size:18px;font-weight:700;padding:14px 48px;border-radius:12px;letter-spacing:0.5px">מלא את הבריף</a>
+<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" style="padding:0 0 36px">
+<a href="${briefLink}" target="_blank" style="display:inline-block;background-color:#e94560;color:#ffffff;text-decoration:none;font-size:18px;font-weight:bold;padding:16px 56px;border-radius:8px;letter-spacing:0.5px">מלא את הבריף</a>
 </td></tr></table>
 
-<div style="background-color:#f0f9ff;border-radius:12px;padding:20px 24px;border-right:4px solid #0ea5e9">
-<p style="margin:0 0 4px;font-size:14px;font-weight:600;color:#1e3a8a">מה זה בריף?</p>
-<p style="margin:0;font-size:14px;line-height:1.6;color:#4b5563">שאלון קצר שעוזר לנו להבין את הצרכים שלך, את קהל היעד, המטרות והתקציב — כדי שנוכל ליצור עבורך את המהלך השיווקי המושלם.</p>
-</div>
 </td></tr>
 
 <!-- Footer -->
-<tr><td style="background-color:#f9fafb;padding:24px 40px;text-align:center;border-top:1px solid #e5e7eb">
-<p style="margin:0 0 4px;font-size:13px;color:#9ca3af">נשלח על ידי <strong style="color:#6b7280">${creatorName}</strong> דרך Leaders</p>
-<p style="margin:0;font-size:12px;color:#d1d5db">© ${new Date().getFullYear()} Leaders Group. All rights reserved.</p>
+<tr><td style="background-color:#1a1a2e;padding:28px 40px;text-align:center">
+<div style="font-size:12px;color:#8e8ea0;margin-bottom:4px">נשלח על ידי <strong style="color:#f0c040">${creatorName}</strong> דרך <strong style="color:#e94560">Leaders Brief</strong></div>
+<div style="font-size:11px;color:rgba(255,255,255,0.3)">© ${new Date().getFullYear()} Leaders Group. All rights reserved.</div>
 </td></tr>
 
 </table>
