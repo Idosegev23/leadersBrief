@@ -1,21 +1,24 @@
 import { FormData } from '@/types/form'
 
-const STORAGE_KEY = 'leaders-form-data'
+const BASE_KEY = 'leaders-form-data'
 
-export const saveFormData = (data: Partial<FormData>): void => {
+const getStorageKey = (token?: string) =>
+  token ? `${BASE_KEY}-${token}` : BASE_KEY
+
+export const saveFormData = (data: Partial<FormData>, token?: string): void => {
   if (typeof window !== 'undefined') {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+      localStorage.setItem(getStorageKey(token), JSON.stringify(data))
     } catch (error) {
       console.error('Error saving to localStorage:', error)
     }
   }
 }
 
-export const loadFormData = (): Partial<FormData> | null => {
+export const loadFormData = (token?: string): Partial<FormData> | null => {
   if (typeof window !== 'undefined') {
     try {
-      const data = localStorage.getItem(STORAGE_KEY)
+      const data = localStorage.getItem(getStorageKey(token))
       return data ? JSON.parse(data) : null
     } catch (error) {
       console.error('Error loading from localStorage:', error)
@@ -25,13 +28,12 @@ export const loadFormData = (): Partial<FormData> | null => {
   return null
 }
 
-export const clearFormData = (): void => {
+export const clearFormData = (token?: string): void => {
   if (typeof window !== 'undefined') {
     try {
-      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(getStorageKey(token))
     } catch (error) {
       console.error('Error clearing localStorage:', error)
     }
   }
 }
-
